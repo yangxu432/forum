@@ -309,6 +309,22 @@ INSTALLED_APPS = (
     #"mezzanine.mobile",
 )
 
+try:
+    import mailer
+    INSTALLED_APPS += ('mailer',)
+    EMAIL_BACKEND = "mailer.backend.DbBackend"
+except ImportError:
+    pass
+
+try:
+    import south
+    INSTALLED_APPS += ('south',)
+    SOUTH_TESTS_MIGRATE = False
+except ImportError:
+    pass
+
+FORCE_SCRIPT_NAME = ''
+
 # List of processors used by RequestContext to populate the context.
 # Each one should be a callable that takes the request object as its
 # only parameter and returns a dictionary to add to the context.
@@ -322,6 +338,11 @@ TEMPLATE_CONTEXT_PROCESSORS = (
     "django.core.context_processors.request",
     "django.core.context_processors.tz",
     "mezzanine.conf.context_processors.settings",
+
+
+    'django_authopenid.context_processors.authopenid',
+    'django_messages.context_processors.inbox',
+    'djangobb_forum.context_processors.forum_settings',
 )
 
 # List of middleware classes to use. Order is important; in the request phase,
