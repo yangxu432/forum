@@ -98,15 +98,31 @@ MANAGERS = ADMINS
 # timezone as the operating system.
 # If running in a Windows environment this must be set to the same as your
 # system time zone.
-TIME_ZONE = None
-
-# If you set this to True, Django will use timezone-aware datetimes.
+# system time zone.
+TIME_ZONE = 'America/New_York'
 USE_TZ = True
 
 # Language code for this installation. All choices can be found here:
 # http://www.i18nguy.com/unicode/language-identifiers.html
 LANGUAGE_CODE = "en"
-
+LANGUAGES = (
+    ('ca', 'Catalan'),
+    ('cs', 'Czech'),
+    ('de', 'German'),
+    ('en', 'English'),
+    ('es', 'Spanish'),
+    ('fo', 'Faroese'),
+    ('fr', 'France'),
+    ('it', 'Italian'),
+    ('lt', 'Lithuanian'),
+    ('mn', 'Mongolian'),
+    ('nl', 'Dutch'),
+    ('pl', 'Polish'),
+    ('ru', 'Russian'),
+    ('uk_UA', 'Ukrainian'),
+    ('vi', 'Vietnamese'),
+    ('zh_CN', 'Chinese'),
+)
 # A boolean that turns on/off debug mode. When set to ``True``, stack traces
 # are displayed for error pages. Should always be set to ``False`` in
 # production. Best set to ``True`` in local_settings.py
@@ -198,7 +214,28 @@ STATIC_URL = "/static/"
 # Don't put anything in this directory yourself; store your static files
 # in apps' "static/" subdirectories and in STATICFILES_DIRS.
 # Example: "/home/media/media.lawrence.com/static/"
-STATIC_ROOT = os.path.join(PROJECT_ROOT, STATIC_URL.strip("/"))
+STATIC_ROOT = os.path.join(PROJECT_ROOT, 'static')
+
+STATICFILES_DIRS = (
+    os.path.join(PROJECT_ROOT,'project_static'),
+)
+
+if not hasattr(globals(), 'SECRET_KEY'):
+    SECRET_FILE = os.path.join(PROJECT_ROOT, 'secret.txt')
+    try:
+        SECRET_KEY = open(SECRET_FILE).read().strip()
+    except IOError:
+        try:
+            from random import choice
+            import string
+            symbols = ''.join((string.lowercase, string.digits, string.punctuation ))
+            SECRET_KEY = ''.join([choice(symbols) for i in range(50)])
+            secret = file(SECRET_FILE, 'w')
+            secret.write(SECRET_KEY)
+            secret.close()
+        except IOError:
+            raise Exception('Please create a %s file with random characters to generate your secret key!' % SECRET_FILE)
+
 
 # URL that handles the media served from MEDIA_ROOT. Make sure to use a
 # trailing slash.
@@ -218,7 +255,21 @@ ROOT_URLCONF = "%s.urls" % PROJECT_DIRNAME
 # Don't forget to use absolute paths, not relative paths.
 TEMPLATE_DIRS = (os.path.join(PROJECT_ROOT, "templates"),)
 
+HAYSTACK_CONNECTIONS = {
+    'default': {
+        'ENGINE': 'haystack.backends.whoosh_backend.WhooshEngine',
+        'PATH': os.path.join(PROJECT_ROOT, 'djangobb_index'),
+        'INCLUDE_SPELLING': True,
+    },
+}
+HAYSTACK_SIGNAL_PROCESSOR = 'haystack.signals.RealtimeSignalProcessor'
+# Account settings
+ACCOUNT_ACTIVATION_DAYS = 10
+LOGIN_REDIRECT_URL = '/forum/'
+LOGIN_URL = '/forum/account/signin/'
 
+#Cache settings
+CACHE_MIDDLEWARE_ANONYMOUS_ONLY = True
 ################
 # APPLICATIONS #
 ################
@@ -232,6 +283,19 @@ INSTALLED_APPS = (
     "django.contrib.sites",
     "django.contrib.sitemaps",
     "django.contrib.staticfiles",
+
+    'django.contrib.messages',
+    #'django.contrib.admindocs',
+    'django.contrib.humanize',
+    'registration',
+    'pagination',
+    'django_authopenid',
+    'djangobb_forum',
+    'haystack',
+    'django_messages',
+ 
+    'djangoChat',
+
     "mezzanine.boot",
     "mezzanine.conf",
     "mezzanine.core",
@@ -280,6 +344,18 @@ MIDDLEWARE_CLASSES = (
     # "mezzanine.core.middleware.SSLRedirectMiddleware",
     "mezzanine.pages.middleware.PageMiddleware",
     "mezzanine.core.middleware.FetchFromCacheMiddleware",
+
+
+
+    #'django.middleware.cache.UpdateCacheMiddleware',
+    'django.middleware.locale.LocaleMiddleware',
+    'pagination.middleware.PaginationMiddleware',
+    'django_authopenid.middleware.OpenIDMiddleware',
+    'django.middleware.cache.FetchFromCacheMiddleware',
+    'django.middleware.transaction.TransactionMiddleware',
+    'djangobb_forum.middleware.LastLoginMiddleware',
+    'djangobb_forum.middleware.UsersOnline',
+    'djangobb_forum.middleware.TimezoneMiddleware',
 )
 
 # Store these package names here as they may change in the future since

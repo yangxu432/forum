@@ -4,19 +4,43 @@ from django.contrib import admin
 
 from mezzanine.core.views import direct_to_template
 
+from django.conf.urls.defaults import *
+from django.conf import settings
+from django.contrib import admin
+
+from django_authopenid.urls import urlpatterns as authopenid_urlpatterns
+from registration.forms import RegistrationFormUniqueEmail
+
+from djangobb_forum import settings as forum_settings
+from sitemap import SitemapForum, SitemapTopic
+
+for i, rurl in enumerate(authopenid_urlpatterns):
+    if rurl.name == 'registration_register':
+        authopenid_urlpatterns[i].default_args.update({'form_class': RegistrationFormUniqueEmail})
+        break
 
 admin.autodiscover()
 
 # Add the urlpatterns for any custom Django applications here.
 # You can also change the ``home`` view to add your own functionality
 # to the project's homepage.
+sitemaps = {
+    'forum': SitemapForum,
+    'topic': SitemapTopic,
+}
 
 urlpatterns = patterns("",
 
     # Change the admin prefix here to use an alternate URL for the
     # admin interface, which would be marginally more secure.
     ("^admin/", include(admin.site.urls)),
+    # Sitemap
+    (r'^sitemap\.xml$', 'django.contrib.sitemaps.views.sitemap', {'sitemaps': sitemaps}),
 
+    # Apps
+    (r'^forum/account/', include('django_authopenid.urls')),
+    (r'^forum/', include('djangobb_forum.urls', namespace='djangobb')),
+    url(r'^chat/',include('djangoChat.urls')),
     # We don't want to presume how your homepage works, so here are a
     # few patterns you can use to set it up.
 
@@ -84,7 +108,17 @@ urlpatterns = patterns("",
     # ("^%s/" % settings.SITE_PREFIX, include("mezzanine.urls"))
 
 )
+# PM Extension
+if (forum_settings.PM_SUPPORT):
+    urlpatterns += patterns('',
+        (r'^forum/pm/', include('django_messages.urls')),
+   )
 
+if (settings.DEBUG):
+    urlpatterns += patterns('',
+        (r'^%s(?P<path>.*)$' % settings.MEDIA_URL.lstrip('/'),
+            'django.views.static.serve', {'document_root': settings.MEDIA_ROOT}),
+    )
 # Adds ``STATIC_URL`` to the context of error pages, so that error
 # pages can use JS, CSS and images.
 handler404 = "mezzanine.core.views.page_not_found"
