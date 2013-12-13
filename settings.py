@@ -216,9 +216,9 @@ STATIC_URL = "/static/"
 # Example: "/home/media/media.lawrence.com/static/"
 STATIC_ROOT = os.path.join(PROJECT_ROOT, STATIC_URL.strip("/"))
 
-#STATICFILES_DIRS = (
-#    os.path.join(PROJECT_ROOT,'project_static'),
-#)
+STATICFILES_DIRS = (
+    os.path.join(PROJECT_ROOT,'project_static'),
+)
 
 if not hasattr(globals(), 'SECRET_KEY'):
     SECRET_FILE = os.path.join(PROJECT_ROOT, 'secret.txt')
@@ -248,7 +248,7 @@ MEDIA_ROOT = os.path.join(PROJECT_ROOT, *MEDIA_URL.strip("/").split("/"))
 
 # Package/module name to import the root urlpatterns from for the project.
 ROOT_URLCONF = "%s.urls" % PROJECT_DIRNAME
-
+#ROOT_URLCONF = "urls"
 # Put strings here, like "/home/html/django_templates"
 # or "C:/www/django/templates".
 # Always use forward slashes, even on Windows.
@@ -287,15 +287,6 @@ INSTALLED_APPS = (
     'django.contrib.messages',
     #'django.contrib.admindocs',
     'django.contrib.humanize',
-    'registration',
-    'pagination',
-    'django_authopenid',
-    'djangobb_forum',
-    'haystack',
-    'django_messages',
- 
-    'djangoChat',
-
     "mezzanine.boot",
     "mezzanine.conf",
     "mezzanine.core",
@@ -307,6 +298,16 @@ INSTALLED_APPS = (
     "mezzanine.twitter",
     #"mezzanine.accounts",
     #"mezzanine.mobile",
+    'registration',
+    'pagination',
+    'django_authopenid',
+    'djangobb_forum',
+    'haystack',
+    'django_messages',
+ 
+    'djangoChat',
+
+
 )
 
 try:
@@ -329,6 +330,8 @@ FORCE_SCRIPT_NAME = ''
 # Each one should be a callable that takes the request object as its
 # only parameter and returns a dictionary to add to the context.
 TEMPLATE_CONTEXT_PROCESSORS = (
+    "django_authopenid.context_processors.authopenid",
+
     "django.contrib.auth.context_processors.auth",
     "django.contrib.messages.context_processors.messages",
     "django.core.context_processors.debug",
@@ -340,21 +343,25 @@ TEMPLATE_CONTEXT_PROCESSORS = (
     "mezzanine.conf.context_processors.settings",
 
 
-    'django_authopenid.context_processors.authopenid',
-    'django_messages.context_processors.inbox',
-    'djangobb_forum.context_processors.forum_settings',
+    "django_messages.context_processors.inbox",
+    "djangobb_forum.context_processors.forum_settings",
 )
 
 # List of middleware classes to use. Order is important; in the request phase,
 # these middleware classes will be applied in the order given, and in the
 # response phase the middleware will be applied in reverse order.
 MIDDLEWARE_CLASSES = (
+
     "mezzanine.core.middleware.UpdateCacheMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
+    "django.middleware.locale.LocaleMiddleware",
+    "pagination.middleware.PaginationMiddleware",
+    "django_authopenid.middleware.OpenIDMiddleware",
+
     "mezzanine.core.request.CurrentRequestMiddleware",
     "mezzanine.core.middleware.RedirectFallbackMiddleware",
     "mezzanine.core.middleware.TemplateForDeviceMiddleware",
@@ -369,14 +376,12 @@ MIDDLEWARE_CLASSES = (
 
 
     #'django.middleware.cache.UpdateCacheMiddleware',
-    'django.middleware.locale.LocaleMiddleware',
-    'pagination.middleware.PaginationMiddleware',
-    'django_authopenid.middleware.OpenIDMiddleware',
-    'django.middleware.cache.FetchFromCacheMiddleware',
-    'django.middleware.transaction.TransactionMiddleware',
-    'djangobb_forum.middleware.LastLoginMiddleware',
-    'djangobb_forum.middleware.UsersOnline',
-    'djangobb_forum.middleware.TimezoneMiddleware',
+
+    "django.middleware.cache.FetchFromCacheMiddleware",
+    "django.middleware.transaction.TransactionMiddleware",
+    "djangobb_forum.middleware.LastLoginMiddleware",
+    "djangobb_forum.middleware.UsersOnline",
+    "djangobb_forum.middleware.TimezoneMiddleware",
 )
 
 # Store these package names here as they may change in the future since
